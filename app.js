@@ -86,6 +86,9 @@ import { routesOrders } from "./src/routes/routes.order.js";
 // Stripe Payment Routes
 import routesStripe from "./src/routes/routes.stripe.js";
 
+// Inventory Routes
+import routesInventory from "./src/routes/routes.inventory.js";
+
 // Swagger Documentation
 import { routesSwagger } from "./src/routes/routes.swagger.js";
 
@@ -208,6 +211,9 @@ app.use('/api/orders', routesOrders);
 
 // ===== STRIPE PAYMENT ROUTES =====
 app.use('/api/stripe', routesStripe);
+
+// ===== INVENTORY ROUTES =====
+app.use('/api/inventory', routesInventory);
 
 // ===== RUTAS EXISTENTES (Legacy - se migrarán gradualmente) =====
 app.use("/api/users", routesUsers);

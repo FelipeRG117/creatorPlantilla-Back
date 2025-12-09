@@ -8,7 +8,8 @@
     "test": "cross-env NODE_ENV=test NODE_OPTIONS=--experimental-vm-modules jest --runInBand",
     "test:watch": "cross-env NODE_ENV=test NODE_OPTIONS=--experimental-vm-modules jest --watch --runInBand",
     "test:coverage": "cross-env NODE_ENV=test NODE_OPTIONS=--experimental-vm-modules jest --coverage --runInBand",
-    "test:verbose": "cross-env NODE_ENV=test NODE_OPTIONS=--experimental-vm-modules jest --verbose --runInBand"
+    "test:verbose": "cross-env NODE_ENV=test NODE_OPTIONS=--experimental-vm-modules jest --verbose --runInBand",
+    "create-admin": "node scripts/create-admin.js"
   },
   "author": "",
   "license": "ISC",
