@@ -202,7 +202,8 @@ export const corsConfig = {
     const allowedOrigins = [
       process.env.FRONTEND_URL || 'http://localhost:3000',
       'http://localhost:3000',
-      'http://localhost:3001'
+      'http://localhost:3001',
+      'http://localhost:3002'
     ];
 
     // Permitir requests sin origin (como Postman, mobile apps)

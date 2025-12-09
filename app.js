@@ -81,6 +81,10 @@ import { routesAlbums } from "./src/routes/routes.album.js";
 import { routesConcerts } from "./src/routes/routes.concert.js";
 import { routesProducts } from "./src/routes/routes.product.js";
 import { routesAnnouncements } from "./src/routes/routes.announcement.js";
+import { routesOrders } from "./src/routes/routes.order.js";
+
+// Stripe Payment Routes
+import routesStripe from "./src/routes/routes.stripe.js";
 
 // Swagger Documentation
 import { routesSwagger } from "./src/routes/routes.swagger.js";
@@ -200,6 +204,10 @@ app.use('/api/albums', routesAlbums);
 app.use('/api/concerts', routesConcerts);
 app.use('/api/products', routesProducts);
 app.use('/api/announcements', routesAnnouncements);
+app.use('/api/orders', routesOrders);
+
+// ===== STRIPE PAYMENT ROUTES =====
+app.use('/api/stripe', routesStripe);
 
 // ===== RUTAS EXISTENTES (Legacy - se migrarán gradualmente) =====
 app.use("/api/users", routesUsers);
