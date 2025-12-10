@@ -211,7 +211,10 @@ export const corsConfig = {
       return callback(null, true);
     }
 
-    if (allowedOrigins.includes(origin)) {
+    // Permitir todos los subdominios de Vercel (preview deployments)
+    const isVercelDomain = origin.includes('.vercel.app');
+
+    if (allowedOrigins.includes(origin) || isVercelDomain) {
       callback(null, true);
     } else {
       logger.warn('CORS blocked request', {
