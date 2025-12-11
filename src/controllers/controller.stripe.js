@@ -323,7 +323,7 @@ export const handleWebhook = async (req, res) => {
             billingAddress: {
               sameAsShipping: true,
             },
-            shippingMethod: metadata.deliveryMethod || 'standard',
+            shippingMethod: 'standard', // Fixed: valid enum values are 'standard', 'express', 'pickup'
             payment: {
               method: 'stripe',
               status: 'paid',
