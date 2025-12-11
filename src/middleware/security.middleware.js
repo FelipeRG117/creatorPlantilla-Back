@@ -91,6 +91,11 @@ export const createRateLimiter = (options = {}) => {
     // Let express-rate-limit handle IP extraction (supports IPv4 and IPv6)
     standardHeaders, // Return rate limit info in `RateLimit-*` headers
     legacyHeaders, // Disable `X-RateLimit-*` headers
+    // Validate trust proxy configuration for production
+    validate: {
+      trustProxy: false, // Disable validation warning for Railway/Vercel
+      xForwardedForHeader: false
+    },
     handler: (req, res) => {
       logger.warn('Rate limit exceeded', {
         ip: req.ip,
