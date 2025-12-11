@@ -34,6 +34,10 @@ import morgan from "morgan";
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Trust proxy - IMPORTANTE para Railway/Vercel/Heroku
+// Permite que express-rate-limit y CORS detecten la IP real del usuario
+app.set('trust proxy', true);
+
 // ==========================================
 // CONEXIÓN A BASE DE DATOS
 // ==========================================
