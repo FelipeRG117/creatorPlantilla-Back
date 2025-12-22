@@ -26,15 +26,7 @@ class ConcertController {
       });
 
       let result;
-      if (search) {
-        result = await ConcertRepository.search(search, {
-          page,
-          limit,
-          sortBy,
-          sortOrder,
-          populate
-        });
-      } else {
+     
         result = await ConcertRepository.findAll(filters, {
           page,
           limit,
@@ -42,7 +34,7 @@ class ConcertController {
           sortOrder,
           populate
         });
-      }
+      
 
       logger.info('Concerts list retrieved successfully', {
         correlationId: req.correlationId,

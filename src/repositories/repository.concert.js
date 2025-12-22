@@ -1,11 +1,11 @@
 /**
- * Concert Repository
+ * Concert Repository - Simplified
  * Capa de acceso a datos para conciertos
- * Implementa el patrón Repository
  */
 
 import { concertModel } from '../models/model.concert.js';
 import { logger } from '../config/logger.js';
+import ConcertDTO from '../dto/concert.dto.js';
 
 class ConcertRepository {
   /**
@@ -14,8 +14,8 @@ class ConcertRepository {
   static async create(concertData) {
     try {
       logger.debug('Creating new concert', {
-        title: concertData.title,
-        eventDate: concertData.eventDate
+        venue: concertData.venue,
+        date: concertData.date
       });
 
       const concert = new concertModel(concertData);
@@ -23,11 +23,11 @@ class ConcertRepository {
 
       logger.info('Concert created successfully', {
         concertId: concert._id,
-        title: concert.title,
-        eventDate: concert.eventDate
+        venue: concert.venue,
+        date: concert.date
       });
 
-      return concert;
+      return new ConcertDTO(concert);
     } catch (error) {
       logger.error('Failed to create concert', {
         error: error.message,
@@ -40,14 +40,15 @@ class ConcertRepository {
   /**
    * Buscar todos los conciertos con filtros y paginación
    */
+
+
   static async findAll(filters = {}, options = {}) {
     try {
       const {
         page = 1,
-        limit = 10,
-        sortBy = 'eventDate',
-        sortOrder = 'asc',
-        populate = false
+        limit = 40, //Harcoddo
+        sortBy = 'date',
+        sortOrder = 'asc'
       } = options;
 
       const skip = (page - 1) * limit;
@@ -61,11 +62,9 @@ class ConcertRepository {
         sortOrder
       });
 
-      let query = concertModel.find(filters).sort(sort).skip(skip).limit(limit);
-
-      if (populate) {
-        query = query.populate('createdBy updatedBy', 'name email');
-      }
+       //const query = concertModel.find(filters).sort(sort).skip(skip).limit(limit);
+      //Harcodeado para que ande
+      const query = concertModel.find().sort(sort).skip(skip)
 
       const [concerts, total] = await Promise.all([
         query.exec(),
@@ -80,7 +79,7 @@ class ConcertRepository {
       });
 
       return {
-        data: concerts,
+        data: concerts.map(concert => new ConcertDTO(concert)),
         pagination: {
           page,
           limit,
@@ -100,70 +99,25 @@ class ConcertRepository {
   /**
    * Buscar concierto por ID
    */
-  static async findById(id, options = {}) {
+  static async findById(id) {
     try {
-      const { populate = false } = options;
-
       logger.debug('Finding concert by ID', { concertId: id });
 
-      let query = concertModel.findById(id);
-
-      if (populate) {
-        query = query.populate('createdBy updatedBy', 'name email');
-      }
-
-      const concert = await query.exec();
+      const concert = await concertModel.findById(id).exec();
 
       if (concert) {
         logger.info('Concert found', {
           concertId: id,
-          title: concert.title
+          venue: concert.venue
         });
       } else {
         logger.warn('Concert not found', { concertId: id });
       }
 
-      return concert;
+      return concert ? new ConcertDTO(concert) : null;
     } catch (error) {
       logger.error('Failed to find concert by ID', {
         concertId: id,
-        error: error.message
-      });
-      throw error;
-    }
-  }
-
-  /**
-   * Buscar concierto por slug
-   */
-  static async findBySlug(slug, options = {}) {
-    try {
-      const { populate = false } = options;
-
-      logger.debug('Finding concert by slug', { slug });
-
-      let query = concertModel.findOne({ slug });
-
-      if (populate) {
-        query = query.populate('createdBy updatedBy', 'name email');
-      }
-
-      const concert = await query.exec();
-
-      if (concert) {
-        logger.info('Concert found by slug', {
-          slug,
-          concertId: concert._id,
-          title: concert.title
-        });
-      } else {
-        logger.warn('Concert not found by slug', { slug });
-      }
-
-      return concert;
-    } catch (error) {
-      logger.error('Failed to find concert by slug', {
-        slug,
         error: error.message
       });
       throw error;
@@ -188,13 +142,13 @@ class ConcertRepository {
       if (concert) {
         logger.info('Concert updated successfully', {
           concertId: id,
-          title: concert.title
+          venue: concert.venue
         });
       } else {
         logger.warn('Concert not found for update', { concertId: id });
       }
 
-      return concert;
+      return concert ? new ConcertDTO(concert) : null;
     } catch (error) {
       logger.error('Failed to update concert', {
         concertId: id,
@@ -216,13 +170,13 @@ class ConcertRepository {
       if (concert) {
         logger.info('Concert deleted successfully', {
           concertId: id,
-          title: concert.title
+          venue: concert.venue
         });
       } else {
         logger.warn('Concert not found for deletion', { concertId: id });
       }
 
-      return concert;
+      return concert ? { success: true } : null;
     } catch (error) {
       logger.error('Failed to delete concert', {
         concertId: id,
@@ -233,26 +187,17 @@ class ConcertRepository {
   }
 
   /**
-   * Buscar conciertos publicados
-   */
-  static async findPublished(options = {}) {
-    return this.findAll({ status: 'published' }, options);
-  }
-
-  /**
    * Buscar conciertos futuros (upcoming)
    */
   static async findUpcoming(limit = 10) {
     try {
-      const now = new Date();
-
       logger.debug('Finding upcoming concerts', { limit });
 
       const concerts = await concertModel.findUpcoming(limit).exec();
 
       logger.info('Upcoming concerts found', { count: concerts.length });
 
-      return concerts;
+      return concerts.map(concert => new ConcertDTO(concert));
     } catch (error) {
       logger.error('Failed to find upcoming concerts', {
         error: error.message
@@ -272,29 +217,9 @@ class ConcertRepository {
 
       logger.info('Past concerts found', { count: concerts.length });
 
-      return concerts;
+      return concerts.map(concert => new ConcertDTO(concert));
     } catch (error) {
       logger.error('Failed to find past concerts', {
-        error: error.message
-      });
-      throw error;
-    }
-  }
-
-  /**
-   * Buscar conciertos destacados
-   */
-  static async findFeatured(limit = 6) {
-    try {
-      logger.debug('Finding featured concerts', { limit });
-
-      const concerts = await concertModel.findFeatured().limit(limit).exec();
-
-      logger.info('Featured concerts found', { count: concerts.length });
-
-      return concerts;
-    } catch (error) {
-      logger.error('Failed to find featured concerts', {
         error: error.message
       });
       throw error;
@@ -308,14 +233,14 @@ class ConcertRepository {
     try {
       logger.debug('Finding concerts by city', { city });
 
-      const now = new Date();
-      const filters = {
-        status: 'published',
-        'location.city': new RegExp(city, 'i'),
-        eventDate: { $gte: now }
-      };
+      const concerts = await concertModel.findByCity(city).exec();
 
-      return this.findAll(filters, options);
+      logger.info('Concerts found by city', {
+        city,
+        count: concerts.length
+      });
+
+      return concerts.map(concert => new ConcertDTO(concert));
     } catch (error) {
       logger.error('Failed to find concerts by city', {
         city,
@@ -332,14 +257,14 @@ class ConcertRepository {
     try {
       logger.debug('Finding concerts by country', { country });
 
-      const now = new Date();
-      const filters = {
-        status: 'published',
-        'location.country': new RegExp(country, 'i'),
-        eventDate: { $gte: now }
-      };
+      const concerts = await concertModel.findByCountry(country).exec();
 
-      return this.findAll(filters, options);
+      logger.info('Concerts found by country', {
+        country,
+        count: concerts.length
+      });
+
+      return concerts.map(concert => new ConcertDTO(concert));
     } catch (error) {
       logger.error('Failed to find concerts by country', {
         country,
@@ -357,8 +282,7 @@ class ConcertRepository {
       logger.debug('Finding concerts by date range', { startDate, endDate });
 
       const filters = {
-        status: 'published',
-        eventDate: {
+        date: {
           $gte: new Date(startDate),
           $lte: new Date(endDate)
         }
@@ -384,12 +308,11 @@ class ConcertRepository {
 
       const regex = new RegExp(searchText, 'i');
       const filters = {
-        status: 'published',
         $or: [
-          { title: regex },
-          { description: regex },
-          { 'location.venueName': regex },
-          { 'location.city': regex }
+          { venue: regex },
+          { city: regex },
+          { address: regex },
+          { country: regex }
         ]
       };
 
@@ -404,153 +327,20 @@ class ConcertRepository {
   }
 
   /**
-   * Contar conciertos por filtros
+   * Contar conciertos
    */
   static async count(filters = {}) {
     try {
+      logger.debug('Counting concerts', { filters });
+
       const count = await concertModel.countDocuments(filters);
+
+      logger.info('Concerts counted', { count, filters });
+
       return count;
     } catch (error) {
       logger.error('Failed to count concerts', {
         filters,
-        error: error.message
-      });
-      throw error;
-    }
-  }
-
-  /**
-   * Verificar si existe un concierto con un slug
-   */
-  static async existsBySlug(slug, excludeId = null) {
-    try {
-      const query = { slug };
-      if (excludeId) {
-        query._id = { $ne: excludeId };
-      }
-
-      const count = await concertModel.countDocuments(query);
-      return count > 0;
-    } catch (error) {
-      logger.error('Failed to check slug existence', {
-        slug,
-        error: error.message
-      });
-      throw error;
-    }
-  }
-
-  /**
-   * Publicar concierto
-   */
-  static async publish(id) {
-    try {
-      logger.debug('Publishing concert', { concertId: id });
-
-      const concert = await concertModel.findById(id);
-      if (!concert) {
-        return null;
-      }
-
-      await concert.publish();
-
-      logger.info('Concert published successfully', {
-        concertId: id,
-        title: concert.title
-      });
-
-      return concert;
-    } catch (error) {
-      logger.error('Failed to publish concert', {
-        concertId: id,
-        error: error.message
-      });
-      throw error;
-    }
-  }
-
-  /**
-   * Marcar concierto como sold out
-   */
-  static async markAsSoldOut(id) {
-    try {
-      logger.debug('Marking concert as sold out', { concertId: id });
-
-      const concert = await concertModel.findById(id);
-      if (!concert) {
-        return null;
-      }
-
-      await concert.markAsSoldOut();
-
-      logger.info('Concert marked as sold out', {
-        concertId: id,
-        title: concert.title
-      });
-
-      return concert;
-    } catch (error) {
-      logger.error('Failed to mark concert as sold out', {
-        concertId: id,
-        error: error.message
-      });
-      throw error;
-    }
-  }
-
-  /**
-   * Cancelar concierto
-   */
-  static async cancel(id, reason) {
-    try {
-      logger.debug('Cancelling concert', { concertId: id, reason });
-
-      const concert = await concertModel.findById(id);
-      if (!concert) {
-        return null;
-      }
-
-      await concert.cancel(reason);
-
-      logger.info('Concert cancelled successfully', {
-        concertId: id,
-        title: concert.title,
-        reason
-      });
-
-      return concert;
-    } catch (error) {
-      logger.error('Failed to cancel concert', {
-        concertId: id,
-        error: error.message
-      });
-      throw error;
-    }
-  }
-
-  /**
-   * Marcar concierto como completado
-   */
-  static async complete(id) {
-    try {
-      logger.debug('Completing concert', { concertId: id });
-
-      const concert = await concertModel.findById(id);
-      if (!concert) {
-        return null;
-      }
-
-      await concert.complete();
-
-      logger.info('Concert completed successfully', {
-        concertId: id,
-        title: concert.title
-      });
-
-      return concert;
-    } catch (error) {
-      logger.error('Failed to complete concert', {
-        concertId: id,
         error: error.message
       });
       throw error;
